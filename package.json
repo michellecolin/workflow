@@ -1,0 +1,19 @@
+{
+  "name": "workflow",
+  "version": "1.0.0",
+  "description": "Web workflow, NPM, SASS, Gulp and more",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michellecolin/workflow.git"
+  },
+  "author": "michelle colin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/michellecolin/workflow/issues"
+  },
+  "homepage": "https://github.com/michellecolin/workflow#readme"
+}
