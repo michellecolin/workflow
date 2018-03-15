@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/michellecolin/workflow/issues"
   },
-  "homepage": "https://github.com/michellecolin/workflow#readme"
+  "homepage": "https://github.com/michellecolin/workflow#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-sass": "^3.1.0"
+  }
 }
