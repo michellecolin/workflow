@@ -10,7 +10,11 @@ let gulp = require('gulp'),
 	merge = require('merge-stream'),
 	jade = require('gulp-jade'),
 	newer = require('gulp-newer'),
-	imagemin = require('gulp-imagemin');
+	imagemin = require('gulp-imagemin'),
+	minify = require('gulp-minify'),
+	cssmin = require('gulp-cssmin'),
+	rename = require('gulp-rename'),
+	htmlmin = require('gulp-htmlmin');
 
 let SOURCE_PATH = {
 	sass: 'src/scss/*.scss',
@@ -26,8 +30,15 @@ let APP_PATH = {
 	js: 'app/js',
 	mainFile: './app/js/main.js',
 	fonts: 'app/css/fonts',
-	img: 'app/img'
+	img: 'app/img',
+	html: 'app/*.html'
 };
+
+let DIST_APP = {
+	root: 'dist',
+	css: 'dist/css',
+	js: 'dist/js'
+}
 
 /*example of fonts task
 gulp.task('moveFonts', () => {
@@ -36,20 +47,18 @@ gulp.task('moveFonts', () => {
 }); */
 
 gulp.task('sass', () => {
-	let bootstrapCSS = gulp.src('./node_modules/bootstrap/dist/css/bootstrap.css');
-
-	let sassFiles = gulp.src(SOURCE_PATH.sass)
+	return gulp.src(SOURCE_PATH.sass)
 		.pipe(autoprefixer({
 			browsers: ['> 0%'],
             cascade: false
 		}))
 		.pipe(sass({//what you want to do with that source
-				outputStyle: 'compact'
+				outputStyle: 'compact',
+				includePaths:  'node_modules/bootstrap/scss'
 			}).on('error', sass.logError)
 		)
-		return merge(bootstrapCSS, sassFiles) //order matters - for overriding
-			.pipe(concat('app.css'))
-			.pipe(gulp.dest(APP_PATH.css));
+		.pipe(concat('app.css'))
+		.pipe(gulp.dest(APP_PATH.css));
 });
 
 gulp.task('copy', ['clean-html'], () => {
@@ -129,3 +138,27 @@ gulp.task('watch', [
 );
 
 gulp.task('default', ['watch']); //if no task was specified the default run the tasks arrayscripts
+
+
+/* dist tasks */
+gulp.task('compress', () => {
+	return gulp.src(APP_PATH.mainFile)
+		.pipe(minify({noSource: true}))
+		.pipe(gulp.dest(DIST_APP.js));
+});
+
+gulp.task('compress-css', ['compress'], () => {
+	return gulp.src(APP_PATH.css + '/app.css')
+		.pipe(cssmin())
+		.pipe(rename({suffix: '.min'}))
+		.pipe(gulp.dest(DIST_APP.css));
+});
+
+gulp.task('compress-html', ['compress-css'], () => {
+	return gulp.src(APP_PATH.html)
+		.pipe(htmlmin({collapseWhitespace:true}))
+		.pipe(gulp.dest(DIST_APP.root));
+});
+
+gulp.task('dist', ['compress-html']);
+
