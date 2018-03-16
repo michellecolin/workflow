@@ -1,15 +1,17 @@
-let gulp = require('gulp');
-let sass = require('gulp-sass');
-let browserSync = require('browser-sync');
-let reload = browserSync.reload;
-let autoprefixer = require('gulp-autoprefixer');
-let clean = require('gulp-clean');
-let concat = require('gulp-concat');
+let gulp = require('gulp'),
+	sass = require('gulp-sass'),
+	browserSync = require('browser-sync'),
+	reload = browserSync.reload,
+	autoprefixer = require('gulp-autoprefixer'),
+	browserify = require('browserify'),
+	clean = require('gulp-clean'),
+	concat = require('gulp-concat'),
+	source = require('vinyl-source-stream');
 
 let SOURCE_PATH = {
 	sass: 'src/scss/*.scss',
 	html: 'src/*.html',
-	js: 'src/js/*.js'
+	js: 'src/js/**'
 };
 
 let APP_PATH = {
@@ -37,9 +39,19 @@ gulp.task('copy', ['clean-html'], () => {
 });
 
 gulp.task('scripts', ['clean-scripts'], () => {
-	gulp.src(SOURCE_PATH.js)
+	return gulp.src(SOURCE_PATH.js)
 		.pipe(concat('main.js'))
 		.pipe(gulp.dest(APP_PATH.js)); //defines files destinations
+});
+
+gulp.task('browserify', ['scripts'], () => {
+ 	return browserify('./app/js/main.js')
+        .bundle()
+        //Pass desired output filename to vinyl-source-stream
+        .pipe(source('main.js'))
+        // Start piping stream to tasks!
+        .pipe(gulp.dest(APP_PATH.js));
+
 });
 
 gulp.task('clean-html', () => {
@@ -64,10 +76,14 @@ gulp.task('serve', ['sass'], () => {
 	});
 });
 
-gulp.task('watch', ['serve', 'sass', 'copy', 'clean-html', 'scripts', 'clean-scripts'], () => { 
+gulp.task('watch', ['serve', 'sass', 'copy', 'clean-html', 
+	//'scripts', 
+	'browserify',
+	'clean-scripts'], () => { 
 	gulp.watch([SOURCE_PATH.sass], ['sass']); //watchs changes on sass files
 	gulp.watch([SOURCE_PATH.html], ['copy']);
-	gulp.watch([SOURCE_PATH.js], ['scripts']);
+	gulp.watch([SOURCE_PATH.js], ['browserify']);
+	//gulp.watch([SOURCE_PATH.js], ['browserify']);
 })
 
 gulp.task('default', ['watch']); //if no task was specified the default run the tasks arrayscripts
