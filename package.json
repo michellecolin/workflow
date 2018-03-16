@@ -17,16 +17,22 @@
   },
   "homepage": "https://github.com/michellecolin/workflow#readme",
   "devDependencies": {
-    "bootstrap": "^4.0.0",
     "browser-sync": "^2.23.6",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^5.0.0",
     "gulp-browserify": "^0.5.1",
     "gulp-clean": "^0.4.0",
     "gulp-concat": "^2.6.1",
+    "gulp-imagemin": "^4.1.0",
+    "gulp-jade": "^1.1.0",
+    "gulp-newer": "^1.4.0",
     "gulp-sass": "^3.1.0",
-    "jquery": "^3.3.1",
-    "mustache": "^2.3.0",
+    "merge-stream": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
+  },
+  "dependencies": {
+    "popper.js": "^1.14.1",
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.3.1"
   }
 }

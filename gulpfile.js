@@ -6,22 +6,39 @@ let gulp = require('gulp'),
 	browserify = require('browserify'),
 	clean = require('gulp-clean'),
 	concat = require('gulp-concat'),
-	source = require('vinyl-source-stream');
+	source = require('vinyl-source-stream'),
+	merge = require('merge-stream'),
+	jade = require('gulp-jade'),
+	newer = require('gulp-newer'),
+	imagemin = require('gulp-imagemin');
 
 let SOURCE_PATH = {
 	sass: 'src/scss/*.scss',
 	html: 'src/*.html',
-	js: 'src/js/**'
+	js: 'src/js/**',
+	jade: 'src/*.jade',
+	img: 'src/img/**'
 };
 
 let APP_PATH = {
 	root: 'app',
 	css: 'app/css',
-	js: 'app/js'
+	js: 'app/js',
+	mainFile: './app/js/main.js',
+	fonts: 'app/css/fonts',
+	img: 'app/img'
 };
 
+/*example of fonts task
+gulp.task('moveFonts', () => {
+	gulp.src('./addr fonts/*.{eot,svg,ttf,woff,woff2}')
+		.pipe(gulp.dest(APP_PATH.fonts));
+}); */
+
 gulp.task('sass', () => {
-	return gulp.src(SOURCE_PATH.sass)
+	let bootstrapCSS = gulp.src('./node_modules/bootstrap/dist/css/bootstrap.css');
+
+	let sassFiles = gulp.src(SOURCE_PATH.sass)
 		.pipe(autoprefixer({
 			browsers: ['> 0%'],
             cascade: false
@@ -30,7 +47,9 @@ gulp.task('sass', () => {
 				outputStyle: 'compact'
 			}).on('error', sass.logError)
 		)
-		.pipe(gulp.dest(APP_PATH.css));
+		return merge(bootstrapCSS, sassFiles) //order matters - for overriding
+			.pipe(concat('app.css'))
+			.pipe(gulp.dest(APP_PATH.css));
 });
 
 gulp.task('copy', ['clean-html'], () => {
@@ -45,13 +64,12 @@ gulp.task('scripts', ['clean-scripts'], () => {
 });
 
 gulp.task('browserify', ['scripts'], () => {
- 	return browserify('./app/js/main.js')
+ 	return browserify(APP_PATH.mainFile)
         .bundle()
         //Pass desired output filename to vinyl-source-stream
         .pipe(source('main.js'))
         // Start piping stream to tasks!
         .pipe(gulp.dest(APP_PATH.js));
-
 });
 
 gulp.task('clean-html', () => {
@@ -76,14 +94,38 @@ gulp.task('serve', ['sass'], () => {
 	});
 });
 
-gulp.task('watch', ['serve', 'sass', 'copy', 'clean-html', 
-	//'scripts', 
-	'browserify',
-	'clean-scripts'], () => { 
-	gulp.watch([SOURCE_PATH.sass], ['sass']); //watchs changes on sass files
-	gulp.watch([SOURCE_PATH.html], ['copy']);
-	gulp.watch([SOURCE_PATH.js], ['browserify']);
-	//gulp.watch([SOURCE_PATH.js], ['browserify']);
-})
+gulp.task('jade', () => {
+	gulp.src(SOURCE_PATH.jade)
+		.pipe(jade({
+			pretty: true
+		}))
+		.pipe(gulp.dest(APP_PATH.root));
+});
+
+gulp.task('images', () => {
+	return gulp.src(SOURCE_PATH.img)
+		.pipe(newer(APP_PATH.img)) //checks for new images
+		.pipe(imagemin())
+		.pipe(gulp.dest(APP_PATH.img));
+});
+
+gulp.task('watch', [
+		'serve', 
+		'sass', 
+		'copy', 
+		'jade',
+		'clean-html', 
+		'browserify',
+		'clean-scripts',
+		'images'
+	], 
+	() => { 
+		gulp.watch([SOURCE_PATH.sass], ['sass']); //watchs changes on sass files
+		gulp.watch([SOURCE_PATH.html], ['copy']);
+		gulp.watch([SOURCE_PATH.jade], ['jade']);
+		gulp.watch([SOURCE_PATH.js], ['browserify']);
+		gulp.watch([SOURCE_PATH.img], ['images']);
+	}
+);
 
 gulp.task('default', ['watch']); //if no task was specified the default run the tasks arrayscripts
