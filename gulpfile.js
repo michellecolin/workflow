@@ -14,7 +14,8 @@ let gulp = require('gulp'),
 	minify = require('gulp-minify'),
 	cssmin = require('gulp-cssmin'),
 	rename = require('gulp-rename'),
-	htmlmin = require('gulp-htmlmin');
+	htmlmin = require('gulp-htmlmin'),
+	sourcemaps = require('gulp-sourcemaps'); //package not working right now, problem with bootstrap check for sourcemaps release
 
 let SOURCE_PATH = {
 	sass: 'src/scss/*.scss',
@@ -48,15 +49,17 @@ gulp.task('moveFonts', () => {
 
 gulp.task('sass', () => {
 	return gulp.src(SOURCE_PATH.sass)
-		.pipe(autoprefixer({
-			browsers: ['> 0%'],
-            cascade: false
-		}))
+		//.pipe(sourcemaps.init())
 		.pipe(sass({//what you want to do with that source
 				outputStyle: 'compact',
 				includePaths:  'node_modules/bootstrap/scss'
 			}).on('error', sass.logError)
 		)
+		//.pipe(sourcemaps.write())
+		.pipe(autoprefixer({
+			browsers: ['> 0%'],
+            cascade: false
+		}))
 		.pipe(concat('app.css'))
 		.pipe(gulp.dest(APP_PATH.css));
 });
