@@ -15,6 +15,8 @@ let gulp = require('gulp'),
 	cssmin = require('gulp-cssmin'),
 	rename = require('gulp-rename'),
 	htmlmin = require('gulp-htmlmin'),
+	typescriptAngular = require('gulp-typescript-angular'),
+ 	typescript = require('gulp-typescript'),
 	sourcemaps = require('gulp-sourcemaps'); //package not working right now, problem with bootstrap check for sourcemaps release
 
 //	'src/js/**'
@@ -24,7 +26,7 @@ let SOURCE_PATH = {
 	js: [
 		"./node_modules/angular/angular.js",
 		"./node_modules/angular-route/angular-route.js",
-		"./src/js/**/*.js" 
+		"./src/js/**/*.ts" 
 	],
 	jade: 'src/*.jade',
 	img: 'src/img/**'
@@ -91,6 +93,10 @@ gulp.task('js', function() {
 
 gulp.task('scripts', ['clean-scripts'], () => {
 	return gulp.src(SOURCE_PATH.js)
+		.pipe(typescript())
+		.pipe(typescriptAngular({
+			decoratorModuleName: 'web'
+		}))
 		.pipe(concat('main.js'))
 		.pipe(gulp.dest(APP_PATH.js))	//defines files destinations
 		.pipe(browserSync.reload({
