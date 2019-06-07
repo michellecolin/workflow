@@ -17,10 +17,15 @@ let gulp = require('gulp'),
 	htmlmin = require('gulp-htmlmin'),
 	sourcemaps = require('gulp-sourcemaps'); //package not working right now, problem with bootstrap check for sourcemaps release
 
+//	'src/js/**'
 let SOURCE_PATH = {
 	sass: 'src/scss/*.scss',
-	html: 'src/*.html',
-	js: 'src/js/**',
+	html: 'src/templates/**/*.html',
+	js: [
+		"./node_modules/angular/angular.js",
+		"./node_modules/angular-route/angular-route.js",
+		"./src/js/**/*.js" 
+	],
 	jade: 'src/*.jade',
 	img: 'src/img/**'
 };
@@ -41,12 +46,6 @@ let DIST_APP = {
 	js: 'dist/js'
 }
 
-/*example of fonts task
-gulp.task('moveFonts', () => {
-	gulp.src('./addr fonts/*.{eot,svg,ttf,woff,woff2}')
-		.pipe(gulp.dest(APP_PATH.fonts));
-}); */
-
 gulp.task('sass', () => {
 	return gulp.src(SOURCE_PATH.sass)
 		//.pipe(sourcemaps.init())
@@ -64,15 +63,39 @@ gulp.task('sass', () => {
 		.pipe(gulp.dest(APP_PATH.css));
 });
 
+/*
 gulp.task('copy', ['clean-html'], () => {
 	gulp.src(SOURCE_PATH.html)
 		.pipe(gulp.dest(APP_PATH.root)); //defines files destinations
+});*/
+
+
+gulp.task('html', ['clean-html'], function() {
+	return gulp.src(SOURCE_PATH.html)
+		.pipe(gulp.dest(APP_PATH.root))
+		.pipe(browserSync.reload({
+				stream: true
+		}));
 });
+
+
+/*
+gulp.task('js', function() {
+	gulp.src(scripts)
+			.pipe(concat('scripts.js'))
+			.pipe(gulp.dest('./dist/js'))
+			.pipe(browserSync.reload({
+					stream: true
+			}));
+});*/
 
 gulp.task('scripts', ['clean-scripts'], () => {
 	return gulp.src(SOURCE_PATH.js)
 		.pipe(concat('main.js'))
-		.pipe(gulp.dest(APP_PATH.js)); //defines files destinations
+		.pipe(gulp.dest(APP_PATH.js))	//defines files destinations
+		.pipe(browserSync.reload({
+			stream: true
+		})); 
 });
 
 gulp.task('browserify', ['scripts'], () => {
@@ -124,7 +147,7 @@ gulp.task('images', () => {
 gulp.task('watch', [
 		'serve', 
 		'sass', 
-		'copy', 
+		'html', 
 		'jade',
 		'clean-html', 
 		'browserify',
@@ -133,7 +156,7 @@ gulp.task('watch', [
 	], 
 	() => { 
 		gulp.watch([SOURCE_PATH.sass], ['sass']); //watchs changes on sass files
-		gulp.watch([SOURCE_PATH.html], ['copy']);
+		gulp.watch([SOURCE_PATH.html], ['html']);
 		gulp.watch([SOURCE_PATH.jade], ['jade']);
 		gulp.watch([SOURCE_PATH.js], ['browserify']);
 		gulp.watch([SOURCE_PATH.img], ['images']);
